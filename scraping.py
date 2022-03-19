@@ -21,7 +21,9 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres":hemispheres(browser),
         "last_modified": dt.datetime.now()
+
     }
     # Stop webdriver and return data
     browser.quit()
@@ -81,7 +83,7 @@ def featured_image(browser):
     # Add try/except for error handling
     try:
         # Find the relative image url
-        img_url_rel = img_soup.find('img', class_='headerimage fade-in').get('src')
+        img_url_rel = img_soup.find('img', class_='fancybox-image').get('src')
     except AttributeError:
         return None
 
@@ -100,12 +102,43 @@ def mars_facts():
         return None
 
     # Assign columns and set index of dataFrame
-    df.columns=['description', 'Mars', 'Earth']
-    df.set_index('description', inplace=True)
+    df.columns=['Description', 'Mars', 'Earth']
+    df.set_index('Description', inplace=True)
         
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+# Getting hemisphere url
+def hemispheres(browser):
+    hemisphere_image_url = []
+    url3 = 'https://marshemispheres.com/'
+    browser.visit(url3)
+    links = browser.find_by_css("a.production-item h3")
+    for index in range(len(links)):
+        browser.find_by_css("a.production-item h3").click()
+        hemisphere_data = scrape_hemisphere(browser.html)
+        hemisphere_image_url.append(hemisphere_data)
+        browser.back()
+    return hemisphere_image_url
+
+
+# Define function to scrape data
+def scrape_hemisphere(html_text):
+    # Parse HTML text
+    soup_hemi = soup(html_text, "html.parser")
+
+    try:
+        title_hemi = soup_hemi.find("h2", class_="title").get_text()
+        url_hemi = soup_hemi.find("a", text="Sample").get("href")
+    except AttributeError:
+        title_hemi = None
+        url_hemi = None
+    hemisphere_dict = {
+        "title": title_hemi,
+        "img_url": url_hemi
+    }
+    return hemisphere_dict
 
 if __name__ == "__main__":
 
