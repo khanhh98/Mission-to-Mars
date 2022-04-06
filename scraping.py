@@ -111,16 +111,23 @@ def mars_facts():
 
 # Getting hemisphere url
 def hemispheres(browser):
-    hemisphere_image_url = []
-    url3 = 'https://marshemispheres.com/'
-    browser.visit(url3)
-    links = browser.find_by_css("a.production-item h3")
-    for index in range(len(links)):
-        browser.find_by_css("a.production-item h3").click()
-        hemisphere_data = scrape_hemisphere(browser.html)
-        hemisphere_image_url.append(hemisphere_data)
+    url = 'https://marshemispheres.com/'
+
+    browser.visit(url + 'index.html')
+
+    # Click the link, find the sample anchor, return the href
+    hemisphere_image_urls = []
+    for i in range(4):
+        # Find the elements on each loop to avoid a stale element exception
+        browser.find_by_css("a.product-item img")[i].click()
+        hemi_data = scrape_hemisphere(browser.html)
+        hemi_data['img_url'] = url + hemi_data['img_url']
+        # Append hemisphere object to list
+        hemisphere_image_urls.append(hemi_data)
+        # Finally, we navigate backwards
         browser.back()
-    return hemisphere_image_url
+
+    return hemisphere_image_urls
 
 
 # Define function to scrape data
